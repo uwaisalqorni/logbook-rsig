@@ -38,7 +38,7 @@
         <h3 class="card-title">Laporan Logbook</h3>
     </div>
     <div class="card-body p-0">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
                     <th>Tanggal</th>

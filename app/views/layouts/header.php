@@ -14,7 +14,7 @@
   <!-- SweetAlert2 -->
   <link rel="stylesheet" href="<?php echo URLROOT; ?>/../adminLTE/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
   <!-- Modern CSS -->
-  <link rel="stylesheet" href="<?php echo URLROOT; ?>/../assets/css/modern.css">
+  <link rel="stylesheet" href="<?php echo URLROOT; ?>/../assets/css/modern.css?v=<?php echo time(); ?>">
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
