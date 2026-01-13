@@ -72,12 +72,8 @@
                         <label>Golongan</label>
                         <select name="golongan" class="form-control">
                             <option value="">-- Pilih Golongan --</option>
-                            <option value="PK I">PK I</option>
-                            <option value="PK II">PK II</option>
-                            <option value="PK III">PK III</option>
-                            <option value="PK IV">PK IV</option>
-                            <option value="PK V">PK V</option>
-                            <option value="Non PK">Non PK</option>
+                            <option value="Medis">Medis</option>
+                            <option value="Non Medis">Non Medis</option>
                         </select>
                     </div>
                 </div>

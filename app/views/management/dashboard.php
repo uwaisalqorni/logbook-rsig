@@ -34,6 +34,28 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3><?php echo $data['submitted_today']; ?></h3>
+                <p>Sudah Mengirim</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3><?php echo $data['total_employees'] - $data['submitted_today']; ?></h3>
+                <p>Belum Mengirim</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row">

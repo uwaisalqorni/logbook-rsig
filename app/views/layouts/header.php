@@ -80,6 +80,27 @@
           </li>
           <?php endif; ?>
 
+          <?php if ($_SESSION['role'] == 'management'): ?>
+          <li class="nav-item">
+            <a href="<?php echo URLROOT; ?>/management/dashboard" class="nav-link">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="<?php echo URLROOT; ?>/management/report" class="nav-link">
+              <i class="nav-icon fas fa-file-alt"></i>
+              <p>Laporan Logbook</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="<?php echo URLROOT; ?>/management/charts" class="nav-link">
+              <i class="nav-icon fas fa-chart-pie"></i>
+              <p>Laporan Grafik</p>
+            </a>
+          </li>
+          <?php endif; ?>
+
           <?php if ($_SESSION['role'] == 'employee'): ?>
           <li class="nav-item">
             <a href="<?php echo URLROOT; ?>/employee/dashboard" class="nav-link">
@@ -97,6 +118,12 @@
             <a href="<?php echo URLROOT; ?>/employee/history" class="nav-link">
               <i class="nav-icon fas fa-history"></i>
               <p>Riwayat Logbook</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="<?php echo URLROOT; ?>/employee/report" class="nav-link">
+              <i class="nav-icon fas fa-file-alt"></i>
+              <p>Laporan</p>
             </a>
           </li>
           <?php endif; ?>

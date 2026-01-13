@@ -100,4 +100,10 @@ class User extends Model {
         $row = $this->db->single();
         return $row['total'];
     }
+
+    public function countActiveEmployees() {
+        $this->db->query("SELECT COUNT(*) as total FROM users WHERE role = 'employee' AND status = 'active'");
+        $row = $this->db->single();
+        return $row['total'];
+    }
 }

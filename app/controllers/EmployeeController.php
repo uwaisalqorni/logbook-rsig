@@ -142,4 +142,89 @@ class EmployeeController extends Controller {
 
         $this->view('employee/logbook_list', $data);
     }
+
+    public function report() {
+        $logbookModel = $this->model('Logbook');
+        $user_id = $_SESSION['user_id'];
+        
+        $start_date = $_GET['start_date'] ?? date('Y-m-01');
+        $end_date = $_GET['end_date'] ?? date('Y-m-d');
+        
+        $logbooks = $logbookModel->getLogbooksByUserIdAndDateRange($user_id, $start_date, $end_date);
+        
+        // Get activities for each logbook to display details
+        foreach ($logbooks as &$logbook) {
+            $logbook['activities'] = $logbookModel->getActivitiesByLogbookId($logbook['id']);
+        }
+
+        $data = [
+            'title' => 'Laporan Logbook',
+            'logbooks' => $logbooks,
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $this->view('employee/report', $data);
+    }
+
+    public function export() {
+        require_once '../vendor/autoload.php';
+        
+        $logbookModel = $this->model('Logbook');
+        $user_id = $_SESSION['user_id'];
+        
+        $start_date = $_GET['start_date'] ?? date('Y-m-01');
+        $end_date = $_GET['end_date'] ?? date('Y-m-d');
+        
+        $logbooks = $logbookModel->getLogbooksByUserIdAndDateRange($user_id, $start_date, $end_date);
+        
+        // Prepare data with activities
+        foreach ($logbooks as &$logbook) {
+            $logbook['activities'] = $logbookModel->getActivitiesByLogbookId($logbook['id']);
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Header
+        $sheet->setCellValue('A1', 'Laporan Logbook Pegawai');
+        $sheet->setCellValue('A2', 'Nama: ' . $_SESSION['user_name']);
+        $sheet->setCellValue('A3', 'Periode: ' . $start_date . ' s/d ' . $end_date);
+        
+        $headers = ['No', 'Tanggal', 'Waktu', 'Kegiatan', 'Output', 'Kendala', 'Status'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '5', $header);
+            $col++;
+        }
+
+        $row = 6;
+        $no = 1;
+        foreach ($logbooks as $logbook) {
+            if (empty($logbook['activities'])) {
+                $sheet->setCellValue('A' . $row, $no++);
+                $sheet->setCellValue('B' . $row, $logbook['date']);
+                $sheet->setCellValue('G' . $row, $logbook['status']);
+                $row++;
+            } else {
+                foreach ($logbook['activities'] as $activity) {
+                    $sheet->setCellValue('A' . $row, $no++);
+                    $sheet->setCellValue('B' . $row, $logbook['date']);
+                    $sheet->setCellValue('C' . $row, date('H:i', strtotime($activity['start_time'])) . ' - ' . date('H:i', strtotime($activity['end_time'])));
+                    $sheet->setCellValue('D' . $row, $activity['description']);
+                    $sheet->setCellValue('E' . $row, $activity['output']);
+                    $sheet->setCellValue('F' . $row, $activity['kendala']);
+                    $sheet->setCellValue('G' . $row, $logbook['status']);
+                    $row++;
+                }
+            }
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="Laporan_Logbook_' . $_SESSION['user_name'] . '.xlsx"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit;
+    }
 }

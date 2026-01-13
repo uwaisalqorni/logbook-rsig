@@ -31,7 +31,15 @@ class Logbook extends Model {
         $this->db->query("UPDATE logbooks SET status = :status WHERE id = :id");
         $this->db->bind(':status', $status);
         $this->db->bind(':id', $id);
-        return $this->db->execute();
+        $result = $this->db->execute();
+
+        if ($result && ($status == 'revision' || $status == 'approved' || $status == 'rejected')) {
+            $this->db->query("UPDATE logbook_details SET status = :status WHERE logbook_id = :id AND status = 'submitted'");
+            $this->db->bind(':status', $status);
+            $this->db->bind(':id', $id);
+            $this->db->execute();
+        }
+        return $result;
     }
 
     public function getLogbooksByUserId($user_id) {
@@ -55,6 +63,30 @@ class Logbook extends Model {
         return $row['total'];
     }
 
+    public function getAllLogbooks($start_date, $end_date, $unit_id = null) {
+        $sql = "SELECT l.*, u.name as user_name, un.name as unit_name 
+                FROM logbooks l 
+                JOIN users u ON l.user_id = u.id 
+                JOIN units un ON u.unit_id = un.id 
+                WHERE l.date BETWEEN :start_date AND :end_date";
+        
+        if ($unit_id) {
+            $sql .= " AND u.unit_id = :unit_id";
+        }
+        
+        $sql .= " ORDER BY l.date DESC, u.name ASC";
+        
+        $this->db->query($sql);
+        $this->db->bind(':start_date', $start_date);
+        $this->db->bind(':end_date', $end_date);
+        
+        if ($unit_id) {
+            $this->db->bind(':unit_id', $unit_id);
+        }
+        
+        return $this->db->resultSet();
+    }
+
     // --- Logbook Details (Activities) Operations ---
 
     public function getActivitiesByLogbookId($logbook_id) {
@@ -64,7 +96,7 @@ class Logbook extends Model {
     }
 
     public function addActivity($data) {
-        $this->db->query("INSERT INTO logbook_details (logbook_id, activity_type_id, description, start_time, end_time, output, kendala) VALUES (:logbook_id, :activity_type_id, :description, :start_time, :end_time, :output, :kendala)");
+        $this->db->query("INSERT INTO logbook_details (logbook_id, activity_type_id, description, start_time, end_time, output, kendala, status) VALUES (:logbook_id, :activity_type_id, :description, :start_time, :end_time, :output, :kendala, 'draft')");
         $this->db->bind(':logbook_id', $data['logbook_id']);
         $this->db->bind(':activity_type_id', $data['activity_type_id']);
         $this->db->bind(':description', $data['description']);
@@ -98,6 +130,12 @@ class Logbook extends Model {
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
+
+    public function submitActivity($id) {
+        $this->db->query("UPDATE logbook_details SET status = 'submitted' WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
     
     // --- For Head of Unit ---
     public function getPendingLogbooksByUnit($unit_id) {
@@ -117,6 +155,19 @@ class Logbook extends Model {
         $this->db->query("SELECT un.name, COUNT(l.id) as total FROM units un LEFT JOIN users u ON un.id = u.unit_id LEFT JOIN logbooks l ON u.id = l.user_id AND MONTH(l.date) = MONTH(CURRENT_DATE()) AND YEAR(l.date) = YEAR(CURRENT_DATE()) GROUP BY un.id ORDER BY total DESC");
         return $this->db->resultSet();
     }
+
+    public function getLogbookCountsByUnit($start_date, $end_date) {
+        $this->db->query("SELECT un.name as unit_name, COUNT(l.id) as total 
+                          FROM logbooks l 
+                          JOIN users u ON l.user_id = u.id 
+                          JOIN units un ON u.unit_id = un.id 
+                          WHERE l.date BETWEEN :start_date AND :end_date 
+                          GROUP BY un.id 
+                          ORDER BY total DESC");
+        $this->db->bind(':start_date', $start_date);
+        $this->db->bind(':end_date', $end_date);
+        return $this->db->resultSet();
+    }
     
     public function getRecentLogbooks() {
          $this->db->query("SELECT l.*, u.name as user_name, un.name as unit_name FROM logbooks l JOIN users u ON l.user_id = u.id JOIN units un ON u.unit_id = un.id ORDER BY l.date DESC LIMIT 5");
@@ -125,6 +176,12 @@ class Logbook extends Model {
 
     public function countTodayLogbooks() {
         $this->db->query("SELECT COUNT(DISTINCT user_id) as total FROM logbooks WHERE date = CURRENT_DATE");
+        $row = $this->db->single();
+        return $row['total'];
+    }
+
+    public function countSubmittedLogbooksToday() {
+        $this->db->query("SELECT COUNT(DISTINCT user_id) as total FROM logbooks WHERE date = CURRENT_DATE AND status IN ('submitted', 'approved', 'rejected', 'revision')");
         $row = $this->db->single();
         return $row['total'];
     }

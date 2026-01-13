@@ -141,7 +141,6 @@
                         <td><?php echo htmlspecialchars($activity['output']); ?></td>
                         <td><?php echo htmlspecialchars($activity['kendala']); ?></td>
                         <td>
-                        <td>
                             <?php if (!$is_final): ?>
                             <a href="<?php echo URLROOT; ?>/employee/logbook?date=<?php echo $data['date']; ?>&edit_id=<?php echo $activity['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
                             <form method="POST" style="display:inline;" onsubmit="return confirm('Hapus kegiatan ini?');">
